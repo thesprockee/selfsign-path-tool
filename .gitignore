@@ -1,0 +1,43 @@
+# PowerShell module artifacts
+*.psm1~
+*.psd1~
+*.ps1~
+
+# Temporary files
+*.tmp
+*.temp
+
+# Log files
+*.log
+
+# Test results
+TestResults/
+*.trx
+
+# Certificate files (should not be committed)
+*.pfx
+*.p12
+*.cer
+*.crt
+*.pem
+*.key
+*.pvk
+
+# IDE files
+.vscode/
+.vs/
+*.suo
+*.user
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Windows artifacts
+$RECYCLE.BIN/
+Desktop.ini
