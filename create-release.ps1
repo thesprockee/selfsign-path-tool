@@ -35,7 +35,7 @@ param(
 )
 
 # Validate version format (basic semantic versioning)
-if ($Version -notmatch '^\d+\.\d+\.\d+(-[\w\.-]+)?$') {
+if ($Version -notmatch '^\d+\.\d+\.\d+(-[\w-]+(\.[\w-]+)*)?$') {
     Write-Error "Invalid version format. Please use semantic versioning (e.g., 1.0.0, 2.1.3, 1.0.0-beta.1)"
     exit 1
 }
