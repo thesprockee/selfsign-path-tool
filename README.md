@@ -59,8 +59,21 @@ This repository includes automated release workflows that trigger when semantic 
 
 ### Creating a Release
 
-To create a new release:
+To create a new release, you can either:
 
+**Option 1: Use the helper script (recommended)**
+```powershell
+# Create a new release version
+.\create-release.ps1 1.0.0
+
+# With a custom message
+.\create-release.ps1 1.0.0 -Message "First stable release"
+
+# Dry run to see what would happen
+.\create-release.ps1 1.0.0 -DryRun
+```
+
+**Option 2: Manual tagging**
 ```bash
 # Tag your commit with a semantic version
 git tag v1.0.0
