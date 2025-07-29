@@ -45,3 +45,54 @@ The script can sign new files, re-sign existing files, or append a signature. It
 - **Status Checking**: View signature status of files
 - **Signature Removal**: Remove self-signed signatures while preserving other signatures
 - **Cross-platform**: Works on Windows, Linux, and macOS with PowerShell Core 
+- **Automated Releases**: Automatic creation of signed releases when semantic version tags are pushed
+
+## Automated Release Process
+
+This repository includes automated release workflows that trigger when semantic version tags are pushed. The automation:
+
+1. **Creates a draft release** for the new version
+2. **Generates a versioned script** (`sign-tool-v{version}.ps1`) 
+3. **Signs the script** using the project's code signing certificate (if configured)
+4. **Generates a changelog** from git commit history
+5. **Attaches the signed script** to the release
+
+### Creating a Release
+
+To create a new release, you can either:
+
+**Option 1: Use the helper script (recommended)**
+```powershell
+# Create a new release version
+.\create-release.ps1 1.0.0
+
+# With a custom message
+.\create-release.ps1 1.0.0 -Message "First stable release"
+
+# Dry run to see what would happen
+.\create-release.ps1 1.0.0 -DryRun
+```
+
+**Option 2: Manual tagging**
+```bash
+# Tag your commit with a semantic version
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+The automation will create a draft release that you can review and publish.
+
+### Code Signing Setup
+
+To enable automatic script signing in releases, add the following repository secrets:
+
+- `SIGNING_CERT`: Base64-encoded .pfx certificate file
+- `SIGNING_CERT_PASSWORD`: Password for the .pfx certificate
+
+```bash
+# Example: Convert certificate to base64 for the secret
+base64 -i your-certificate.pfx | pbcopy  # macOS
+base64 -w 0 your-certificate.pfx | clip  # Windows
+```
+
+If these secrets are not configured, releases will still be created but scripts will not be signed.

@@ -1,0 +1,192 @@
+name: Automated Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'  # Triggers on semantic version tags like v1.0.0, v2.1.3, etc.
+
+jobs:
+  create-release:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Fetch full history for changelog generation
+    
+    - name: Extract version from tag
+      shell: pwsh
+      run: |
+        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        Write-Host "Version: $version"
+        echo "VERSION=$version" >> $env:GITHUB_ENV
+        echo "TAG_NAME=${env:GITHUB_REF##*/}" >> $env:GITHUB_ENV
+    
+    - name: Create versioned script
+      shell: pwsh
+      run: |
+        $versionedScript = "sign-tool-v$env:VERSION.ps1"
+        Copy-Item "sign-tool.ps1" $versionedScript
+        Write-Host "Created versioned script: $versionedScript"
+        echo "VERSIONED_SCRIPT=$versionedScript" >> $env:GITHUB_ENV
+    
+    - name: Sign script (if certificate available)
+      shell: pwsh
+      run: |
+        $versionedScript = $env:VERSIONED_SCRIPT
+        
+        # Check if signing certificate secrets are available
+        if ($env:SIGNING_CERT -and $env:SIGNING_CERT_PASSWORD) {
+          Write-Host "Signing certificate found, proceeding with script signing..."
+          
+          # Decode base64 certificate
+          $certBytes = [System.Convert]::FromBase64String($env:SIGNING_CERT)
+          $certPath = "signing-cert.pfx"
+          [System.IO.File]::WriteAllBytes($certPath, $certBytes)
+          
+          try {
+            # Load certificate
+            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $env:SIGNING_CERT_PASSWORD)
+            
+            # Sign the script
+            $result = Set-AuthenticodeSignature -FilePath $versionedScript -Certificate $cert -TimestampServer "https://timestamp.digicert.com"
+            
+            if ($result.Status -eq "Valid") {
+              Write-Host "Successfully signed $versionedScript" -ForegroundColor Green
+              echo "SCRIPT_SIGNED=true" >> $env:GITHUB_ENV
+            } else {
+              Write-Warning "Signing failed: $($result.StatusMessage)"
+              echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
+            }
+          }
+          catch {
+            Write-Error "Error during signing: $($_.Exception.Message)"
+            echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
+          }
+          finally {
+            # Clean up certificate file
+            if (Test-Path $certPath) {
+              Remove-Item $certPath -Force
+            }
+          }
+        } else {
+          Write-Host "No signing certificate configured. Skipping script signing." -ForegroundColor Yellow
+          Write-Host "To enable script signing, add SIGNING_CERT (base64 encoded .pfx) and SIGNING_CERT_PASSWORD secrets to your repository."
+          echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
+        }
+      env:
+        SIGNING_CERT: ${{ secrets.SIGNING_CERT }}
+        SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
+    
+    - name: Generate changelog
+      shell: pwsh
+      run: |
+        Write-Host "Generating changelog..."
+        
+        # Get the previous tag
+        $previousTag = git tag --sort=-version:refname | Select-Object -First 1
+        if (-not $previousTag) {
+          # If no previous tag, use first commit
+          $previousTag = git rev-list --max-parents=0 HEAD
+        }
+        
+        Write-Host "Previous tag/commit: $previousTag"
+        Write-Host "Current tag: $env:TAG_NAME"
+        
+        # Generate changelog from git log
+        $gitLog = git log --pretty=format:"- %s (%h)" "${previousTag}..HEAD"
+        
+        if ($gitLog) {
+          $changelog = @"
+        ## Changes in $env:TAG_NAME
+        
+        $gitLog
+        
+        ## Installation
+        
+        Download the attached ``sign-tool-v$env:VERSION.ps1`` script and run it with PowerShell.
+        
+        ``````powershell
+        # Make the script executable and run it
+        .\sign-tool-v$env:VERSION.ps1 --help
+        ``````
+        
+        ## Script Verification
+        "@
+          
+          if ($env:SCRIPT_SIGNED -eq "true") {
+            $changelog += @"
+        
+        
+        ✅ **This script has been digitally signed** for security and authenticity.
+        
+        You can verify the signature using:
+        ``````powershell
+        Get-AuthenticodeSignature .\sign-tool-v$env:VERSION.ps1
+        ``````
+        "@
+          } else {
+            $changelog += @"
+        
+        
+        ⚠️ **This script is not digitally signed.** Please verify the source and integrity before use.
+        "@
+          }
+        } else {
+          $changelog = @"
+        ## Changes in $env:TAG_NAME
+        
+        Initial release of the local-sign utility.
+        
+        ## Installation
+        
+        Download the attached ``sign-tool-v$env:VERSION.ps1`` script and run it with PowerShell.
+        
+        ``````powershell
+        # Make the script executable and run it
+        .\sign-tool-v$env:VERSION.ps1 --help
+        ``````
+        "@
+        }
+        
+        # Save changelog to file
+        $changelog | Out-File -FilePath "RELEASE_NOTES.md" -Encoding utf8
+        Write-Host "Changelog generated:"
+        Get-Content "RELEASE_NOTES.md"
+    
+    - name: Create draft release and upload script
+      shell: pwsh
+      run: |
+        Write-Host "Creating draft release with GitHub CLI..."
+        
+        # Create the draft release with the versioned script attached
+        $ghArgs = @(
+          "release", "create", $env:TAG_NAME, $env:VERSIONED_SCRIPT,
+          "--draft", "--title", "Release $env:TAG_NAME", "--notes-file", "RELEASE_NOTES.md"
+        )
+        
+        Write-Host "Executing GitHub CLI with arguments: $ghArgs"
+        Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+        
+        if ($LASTEXITCODE -eq 0) {
+          Write-Host "Draft release created successfully!" -ForegroundColor Green
+        } else {
+          Write-Error "Failed to create draft release"
+          exit 1
+        }
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    
+    - name: Release summary
+      shell: pwsh
+      run: |
+        Write-Host "🎉 Release automation completed!" -ForegroundColor Green
+        Write-Host "📦 Draft release created: $env:TAG_NAME"
+        Write-Host "📝 Script attached: $env:VERSIONED_SCRIPT"
+        Write-Host "🔐 Script signed: $env:SCRIPT_SIGNED"
+        Write-Host ""
+        Write-Host "The draft release is now available at:"
+        Write-Host "https://github.com/$env:GITHUB_REPOSITORY/releases"
+        Write-Host ""
+        Write-Host "Review the release and publish when ready!"
