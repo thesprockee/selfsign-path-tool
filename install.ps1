@@ -140,8 +140,16 @@ function Install-LocalSign {
     # Step 3: Create new certificate
     Write-Host "`nStep 3: Creating new signing certificate..." -ForegroundColor Green
     try {
-        & $tempSignTool -Name $CertName "C:\Windows\System32\notepad.exe" 2>$null >$null
-        Write-Host "✓ Created and installed certificate: $CertName" -ForegroundColor Green
+        # Create a temporary dummy file to satisfy the signing tool's requirement for a file.
+        $dummyFile = [System.IO.Path]::GetTempFileName()
+        try {
+            & $tempSignTool -Name $CertName $dummyFile 2>$null >$null
+            Write-Host "✓ Created and installed certificate: $CertName" -ForegroundColor Green
+        }
+        finally {
+            # Clean up the temporary dummy file.
+            Remove-Item -Path $dummyFile -Force -ErrorAction SilentlyContinue
+        }
     }
     catch {
         Write-Error "Failed to create certificate: $($_.Exception.Message)"
