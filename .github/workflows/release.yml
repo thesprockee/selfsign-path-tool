@@ -85,7 +85,7 @@ jobs:
         Write-Host "Generating changelog..."
         
         # Get the previous tag
-        $previousTag = git describe --tags --abbrev=0 HEAD^ 2>$null
+        $previousTag = git tag --sort=-version:refname | Select-Object -First 1
         if (-not $previousTag) {
           # If no previous tag, use first commit
           $previousTag = git rev-list --max-parents=0 HEAD
