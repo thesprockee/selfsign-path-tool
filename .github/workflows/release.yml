@@ -26,8 +26,8 @@ jobs:
     - name: Create versioned script
       shell: pwsh
       run: |
-        $versionedScript = "sign-tool-v$env:VERSION.ps1"
-        Copy-Item "sign-tool.ps1" $versionedScript
+        $versionedScript = "selfsign-path-v$env:VERSION.ps1"
+        Copy-Item "selfsign-path.ps1" $versionedScript
         Write-Host "Created versioned script: $versionedScript"
         echo "VERSIONED_SCRIPT=$versionedScript" >> $env:GITHUB_ENV
     
@@ -105,11 +105,11 @@ jobs:
         
         ## Installation
         
-        Download the attached ``sign-tool-v$env:VERSION.ps1`` script and run it with PowerShell.
+        Download the attached ``selfsign-path-v$env:VERSION.ps1`` script and run it with PowerShell.
         
         ``````powershell
         # Make the script executable and run it
-        .\sign-tool-v$env:VERSION.ps1 --help
+        .\selfsign-path-v$env:VERSION.ps1 --help
         ``````
         
         ## Script Verification
@@ -123,7 +123,7 @@ jobs:
         
         You can verify the signature using:
         ``````powershell
-        Get-AuthenticodeSignature .\sign-tool-v$env:VERSION.ps1
+        Get-AuthenticodeSignature .\selfsign-path-v$env:VERSION.ps1
         ``````
         "@
           } else {
@@ -137,15 +137,15 @@ jobs:
           $changelog = @"
         ## Changes in $env:TAG_NAME
         
-        Initial release of the local-sign utility.
+        Initial release of the selfsign-path-tool utility.
         
         ## Installation
         
-        Download the attached ``sign-tool-v$env:VERSION.ps1`` script and run it with PowerShell.
+        Download the attached ``selfsign-path-v$env:VERSION.ps1`` script and run it with PowerShell.
         
         ``````powershell
         # Make the script executable and run it
-        .\sign-tool-v$env:VERSION.ps1 --help
+        .\selfsign-path-v$env:VERSION.ps1 --help
         ``````
         "@
         }

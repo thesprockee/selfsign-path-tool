@@ -1,4 +1,4 @@
-# local-sign
+# selfsign-path-tool
 
 A PowerShell utility to manage and apply self-signed code signatures to executables and libraries.
 
@@ -7,7 +7,7 @@ A PowerShell utility to manage and apply self-signed code signatures to executab
 For Oculus VR users, you can install and sign your Oculus applications with a single command:
 
 ```powershell
-iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 | iex
 ```
 
 **⚠️ Important: Run PowerShell as Administrator for the one-line installation.**
@@ -23,7 +23,7 @@ This express installation will automatically:
 
 ## Overview
 
-The sign-tool script automates the process of code signing using a self-signed certificate. Upon first run, it generates a new self-signed code-signing certificate and imports it into the system's Trusted Root Certification Authorities store. Subsequent runs will use this existing certificate.
+The selfsign-path script automates the process of code signing using a self-signed certificate. Upon first run, it generates a new self-signed code-signing certificate and imports it into the system's Trusted Root Certification Authorities store. Subsequent runs will use this existing certificate.
 
 The script can sign new files, re-sign existing files, or append a signature. It can also be used to check the signature status of files or to remove its own self-signed signature. It accepts one or more files or glob-like patterns as input.
 
@@ -33,35 +33,35 @@ The script can sign new files, re-sign existing files, or append a signature. It
 
 ```powershell
 # Basic one-liner installation
-iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex
+iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 | iex
 
 # Force installation without prompts
-iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex -Command "& { . ([ScriptBlock]::Create(\$input)); Install-LocalSign -Force }"
+iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 | iex -Command "& { . ([ScriptBlock]::Create(\$input)); Install-LocalSign -Force }"
 
 # Install with custom certificate name
-iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex -Command "& { . ([ScriptBlock]::Create(\$input)); Install-LocalSign -CertName 'MyCustomCert' }"
+iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 | iex -Command "& { . ([ScriptBlock]::Create(\$input)); Install-LocalSign -CertName 'MyCustomCert' }"
 ```
 
 ### Manual Tool Usage
 
 ```powershell
 # Sign a single executable
-.\sign-tool.ps1 myapp.exe
+.\selfsign-path.ps1 myapp.exe
 
 # Sign all DLLs in a directory and its subdirectories
-.\sign-tool.ps1 -Recurse "bin/**/*.dll"
+.\selfsign-path.ps1 -Recurse "bin/**/*.dll"
 
 # Check the signature status of all executables in the current directory
-.\sign-tool.ps1 -Status "*.exe"
+.\selfsign-path.ps1 -Status "*.exe"
 
 # Sign files using a custom-named certificate
-.\sign-tool.ps1 -Name "My Custom Cert" myapp.exe
+.\selfsign-path.ps1 -Name "My Custom Cert" myapp.exe
 
 # Sign a file using specific certificate and key files
-.\sign-tool.ps1 -CertFile "/path/to/my.crt" -KeyFile "/path/to/my.key" myapp.exe
+.\selfsign-path.ps1 -CertFile "/path/to/my.crt" -KeyFile "/path/to/my.key" myapp.exe
 
 # Remove self-signatures from all files in a release folder
-.\sign-tool.ps1 -Clear -Recurse "release/"
+.\selfsign-path.ps1 -Clear -Recurse "release/"
 ```
 
 ## Requirements
@@ -86,7 +86,7 @@ iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.
 This repository includes automated release workflows that trigger when semantic version tags are pushed. The automation:
 
 1. **Creates a draft release** for the new version
-2. **Generates a versioned script** (`sign-tool-v{version}.ps1`) 
+2. **Generates a versioned script** (`selfsign-path-v{version}.ps1`) 
 3. **Signs the script** using the project's code signing certificate (if configured)
 4. **Generates a changelog** from git commit history
 5. **Attaches the signed script** to the release

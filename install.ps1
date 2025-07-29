@@ -2,11 +2,11 @@
 
 <#
 .SYNOPSIS
-    Express installation script for local-sign tool - signs Oculus VR applications.
+    Express installation script for selfsign-path-tool - signs Oculus VR applications.
 
 .DESCRIPTION
-    This script provides a one-liner installation experience for the local-sign tool.
-    It automatically downloads the sign-tool.ps1 script from GitHub and performs
+    This script provides a one-liner installation experience for the selfsign-path-tool.
+    It automatically downloads the selfsign-path.ps1 script from GitHub and performs
     the following operations:
     
     1. Prompts to delete existing certificates created by this script
@@ -24,15 +24,15 @@
 
 .EXAMPLE
     Install via one-liner (recommended):
-    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
 
 .EXAMPLE
     Install with custom certificate name:
-    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -CertName 'MyCustomCert'; Remove-Item $tempFile
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -CertName 'MyCustomCert'; Remove-Item $tempFile
 
 .EXAMPLE
     Force install without prompts:
-    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -Force; Remove-Item $tempFile
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -Force; Remove-Item $tempFile
 #>
 
 [CmdletBinding()]
@@ -49,13 +49,13 @@ function Install-LocalSign {
     )
 
     # Script configuration
-    $SignToolUrl = "https://raw.githubusercontent.com/thesprockee/local-sign/main/sign-tool.ps1"
+    $SignToolUrl = "https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/selfsign-path.ps1"
     $OculusDirectories = @(
         "C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena",
         "C:\echovr"
     )
 
-    Write-Host "=== Local-Sign Express Installation ===" -ForegroundColor Cyan
+    Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
     Write-Host "This script will automatically sign Oculus VR applications." -ForegroundColor Yellow
     Write-Host ""
 
@@ -66,15 +66,15 @@ function Install-LocalSign {
         exit 1
     }
 
-    # Step 1: Download sign-tool.ps1
-    Write-Host "Step 1: Downloading sign-tool.ps1 from GitHub..." -ForegroundColor Green
+    # Step 1: Download selfsign-path.ps1
+    Write-Host "Step 1: Downloading selfsign-path.ps1 from GitHub..." -ForegroundColor Green
     try {
-        $tempSignTool = Join-Path $env:TEMP "sign-tool.ps1"
+        $tempSignTool = Join-Path $env:TEMP "selfsign-path.ps1"
         Invoke-WebRequest -Uri $SignToolUrl -OutFile $tempSignTool -UseBasicParsing
-        Write-Host "✓ Downloaded sign-tool.ps1 successfully" -ForegroundColor Green
+        Write-Host "✓ Downloaded selfsign-path.ps1 successfully" -ForegroundColor Green
     }
     catch {
-        Write-Error "Failed to download sign-tool.ps1: $($_.Exception.Message)"
+        Write-Error "Failed to download selfsign-path.ps1: $($_.Exception.Message)"
         exit 1
     }
 
@@ -183,7 +183,7 @@ function Install-LocalSign {
             Write-Host "  Found $($files.Count) files to sign..." -ForegroundColor Cyan
             $totalFound += $files.Count
 
-            # Sign files using the sign-tool
+            # Sign files using the selfsign-path tool
             $signResult = & $tempSignTool -Name $CertName -Recurse $directory 2>&1
             
             # Count successful signatures from output

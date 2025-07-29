@@ -5,7 +5,7 @@
     A utility to manage and apply self-signed code signatures to executables and libraries.
 
 .DESCRIPTION
-    The sign-tool script automates the process of code signing using a self-signed
+    The selfsign-path script automates the process of code signing using a self-signed
     certificate. Upon first run, it generates a new self-signed code-signing
     certificate and imports it into the system's Trusted Root Certification
     Authorities store. Subsequent runs will use this existing certificate.
@@ -46,27 +46,27 @@
     Display this help documentation and exit.
 
 .EXAMPLE
-    .\sign-tool.ps1 myapp.exe
+    .\selfsign-path.ps1 myapp.exe
     Sign a single executable.
 
 .EXAMPLE
-    .\sign-tool.ps1 -Recurse "bin/**/*.dll"
+    .\selfsign-path.ps1 -Recurse "bin/**/*.dll"
     Sign all DLLs in a directory and its subdirectories.
 
 .EXAMPLE
-    .\sign-tool.ps1 -Status "*.exe"
+    .\selfsign-path.ps1 -Status "*.exe"
     Check the signature status of all executables in the current directory.
 
 .EXAMPLE
-    .\sign-tool.ps1 -Name "My Custom Cert" myapp.exe
+    .\selfsign-path.ps1 -Name "My Custom Cert" myapp.exe
     Sign files using a custom-named certificate.
 
 .EXAMPLE
-    .\sign-tool.ps1 -CertFile "/path/to/my.crt" -KeyFile "/path/to/my.key" myapp.exe
+    .\selfsign-path.ps1 -CertFile "/path/to/my.crt" -KeyFile "/path/to/my.key" myapp.exe
     Sign a file using specific certificate and key files.
 
 .EXAMPLE
-    .\sign-tool.ps1 -Clear -Recurse "release/"
+    .\selfsign-path.ps1 -Clear -Recurse "release/"
     Remove self-signatures from all files in a release folder.
 #>
 
@@ -99,13 +99,13 @@ param(
 if ($Help -or ($FileOrPattern.Count -eq 0 -and -not $Clear -and -not $Status)) {
     $helpText = @"
 NAME
-    sign-tool - A utility to manage and apply self-signed code signatures to executables and libraries.
+    selfsign-path - A utility to manage and apply self-signed code signatures to executables and libraries.
 
 SYNOPSIS
-    sign-tool [OPTIONS] file_or_pattern...
+    selfsign-path [OPTIONS] file_or_pattern...
 
 DESCRIPTION
-    The sign-tool script automates the process of code signing using a self-signed
+    The selfsign-path script automates the process of code signing using a self-signed
     certificate. Upon first run, it generates a new self-signed code-signing
     certificate and imports it into the system's Trusted Root Certification
     Authorities store. Subsequent runs will use this existing certificate.
@@ -149,22 +149,22 @@ OPTIONS
 
 EXAMPLES
     Sign a single executable:
-        sign-tool myapp.exe
+        selfsign-path myapp.exe
 
     Sign all DLLs in a directory and its subdirectories:
-        sign-tool --recurse 'bin/**/*.dll'
+        selfsign-path --recurse 'bin/**/*.dll'
 
     Check the signature status of all executables in the current directory:
-        sign-tool --status *.exe
+        selfsign-path --status *.exe
 
     Sign files using a custom-named certificate:
-        sign-tool -n "My Custom Cert" myapp.exe
+        selfsign-path -n "My Custom Cert" myapp.exe
 
     Sign a file using specific certificate and key files:
-        sign-tool --cert-file /path/to/my.crt --key-file /path/to/my.key myapp.exe
+        selfsign-path --cert-file /path/to/my.crt --key-file /path/to/my.key myapp.exe
 
     Remove self-signatures from all files in a release folder:
-        sign-tool --clear --recurse release/
+        selfsign-path --clear --recurse release/
 "@
     Write-Host $helpText
     exit 0
