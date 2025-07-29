@@ -24,15 +24,15 @@
 
 .EXAMPLE
     Install via one-liner (recommended):
-    iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
 
 .EXAMPLE
     Install with custom certificate name:
-    iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex -Command "& { param(\$Force, \$CertName) . ([ScriptBlock]::Create(\$input)); Install-LocalSign -CertName 'MyCustomCert' }"
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -CertName 'MyCustomCert'; Remove-Item $tempFile
 
 .EXAMPLE
     Force install without prompts:
-    iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 | iex -Command "& { param(\$Force, \$CertName) . ([ScriptBlock]::Create(\$input)); Install-LocalSign -Force }"
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/local-sign/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -Force; Remove-Item $tempFile
 #>
 
 [CmdletBinding()]
