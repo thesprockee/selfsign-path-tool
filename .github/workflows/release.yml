@@ -161,10 +161,13 @@ jobs:
         Write-Host "Creating draft release with GitHub CLI..."
         
         # Create the draft release with the versioned script attached
-        $releaseCmd = "gh release create '$env:TAG_NAME' '$env:VERSIONED_SCRIPT' --draft --title 'Release $env:TAG_NAME' --notes-file RELEASE_NOTES.md"
+        $ghArgs = @(
+          "release", "create", $env:TAG_NAME, $env:VERSIONED_SCRIPT,
+          "--draft", "--title", "Release $env:TAG_NAME", "--notes-file", "RELEASE_NOTES.md"
+        )
         
-        Write-Host "Executing: $releaseCmd"
-        Invoke-Expression $releaseCmd
+        Write-Host "Executing GitHub CLI with arguments: $ghArgs"
+        Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
         
         if ($LASTEXITCODE -eq 0) {
           Write-Host "Draft release created successfully!" -ForegroundColor Green
