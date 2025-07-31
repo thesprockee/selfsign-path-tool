@@ -4,7 +4,7 @@ A PowerShell utility to manage and apply self-signed code signatures to executab
 
 ## Quick Start - One-Line Installation
 
-For Oculus VR users, you can install and sign your Oculus applications with a single command:
+For EVR users, you can install and sign your EVR applications with a single command:
 
 ```powershell
 iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 | iex
@@ -15,7 +15,7 @@ iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/
 This express installation will automatically:
 - Download the latest signing tool
 - Prompt to remove any existing LocalSign certificates
-- Create a new signing certificate named "LocalSign-OculusVR"
+- Create a new signing certificate named "LocalSign-EVR"
 - Install it to the Trusted Root Certification Authorities store
 - Sign all `.exe` and `.dll` files in:
   - `C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena`
@@ -29,7 +29,7 @@ The script can sign new files, re-sign existing files, or append a signature. It
 
 ## Usage
 
-### Express Installation (Recommended for Oculus VR)
+### Express Installation (Recommended for EVR)
 
 ```powershell
 # Basic one-liner installation

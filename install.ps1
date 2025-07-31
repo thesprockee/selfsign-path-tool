@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Express installation script for selfsign-path-tool - signs Oculus VR applications.
+    Express installation script for selfsign-path-tool - signs EVR applications.
 
 .DESCRIPTION
     This script provides a one-liner installation experience for the selfsign-path-tool.
@@ -12,7 +12,7 @@
     1. Prompts to delete existing certificates created by this script
     2. Creates a new signing certificate with a deterministic description
     3. Imports the certificate to the trusted CA in the certificate store
-    4. Signs all executables and DLLs in the Oculus VR directories:
+    4. Signs all executables and DLLs in the EVR directories:
        - C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena
        - C:\echovr
 
@@ -20,11 +20,7 @@
     Skip confirmation prompts and proceed with installation automatically.
 
 .PARAMETER CertName
-    Override the default certificate name. Default is "LocalSign-OculusVR".
-
-.PARAMETER Directories
-    Additional directories to scan and sign. These will be processed along with
-    the default Oculus VR directories.
+    Override the default certificate name. Default is "LocalSign-EVR".
 
 .EXAMPLE
     Install via one-liner (recommended):
@@ -46,7 +42,7 @@
 [CmdletBinding()]
 param(
     [switch]$Force,
-    [string]$CertName = "LocalSign-OculusVR",
+    [string]$CertName = "LocalSign-EVR",
     [string[]]$Directories = @()
 )
 
@@ -54,13 +50,12 @@ function Install-LocalSign {
     [CmdletBinding()]
     param(
         [switch]$Force,
-        [string]$CertName = "LocalSign-OculusVR",
-        [string[]]$Directories = @()
+        [string]$CertName = "LocalSign-EVR"
     )
 
     # Script configuration
     $SignToolUrl = "https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/selfsign-path.ps1"
-    $OculusDirectories = @(
+    $EVRDirectories = @(
         "C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena",
         "C:\echovr"
     )
@@ -69,11 +64,7 @@ function Install-LocalSign {
     $AllDirectories = $OculusDirectories + $Directories
 
     Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
-    if ($Directories.Count -gt 0) {
-        Write-Host "This script will automatically sign Oculus VR applications and additional specified directories." -ForegroundColor Yellow
-    } else {
-        Write-Host "This script will automatically sign Oculus VR applications." -ForegroundColor Yellow
-    }
+    Write-Host "This script will automatically sign EVR applications." -ForegroundColor Yellow
     Write-Host ""
 
     # Check if running as administrator
@@ -173,12 +164,12 @@ function Install-LocalSign {
         exit 1
     }
 
-    # Step 4: Sign directories
-    Write-Host "`nStep 4: Signing applications..." -ForegroundColor Green
+    # Step 4: Sign EVR directories
+    Write-Host "`nStep 4: Signing EVR applications..." -ForegroundColor Green
     $totalSigned = 0
     $totalFound = 0
 
-    foreach ($directory in $AllDirectories) {
+    foreach ($directory in $EVRDirectories) {
         Write-Host "`nProcessing directory: $directory" -ForegroundColor Cyan
         
         if (-not (Test-Path $directory)) {
@@ -234,10 +225,8 @@ function Install-LocalSign {
         Write-Host "⚠ Some files could not be signed (possibly already signed or in use)" -ForegroundColor Yellow
     }
 
-    Write-Host "`nYour applications are now signed and should work without security warnings." -ForegroundColor Cyan
-    if ($Directories.Count -eq 0) {
-        Write-Host "If you encounter any issues, try restarting the Oculus software." -ForegroundColor Yellow
-    }
+    Write-Host "`nYour EVR applications are now signed and should work without security warnings." -ForegroundColor Cyan
+    Write-Host "If you encounter any issues, try restarting the EVR software." -ForegroundColor Yellow
 }
 
 # Function to check if running as administrator (Windows)
