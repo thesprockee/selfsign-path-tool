@@ -177,8 +177,8 @@ function Install-LocalSign {
         exit 1
     }
 
-    # Step 4: Sign directories
-    Write-Host "`nStep 4: Signing applications..." -ForegroundColor Green
+    # Step 4: Sign EVR directories
+    Write-Host "`nStep 4: Signing EVR applications..." -ForegroundColor Green
     $totalSigned = 0
     $totalFound = 0
 
