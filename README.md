@@ -12,6 +12,11 @@ iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/
 
 **⚠️ Important: Run PowerShell as Administrator for the one-line installation.**
 
+> **Alternative (more robust):** If you encounter any issues with the one-liner, use this approach instead:
+> ```powershell
+> $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; if (Get-Command pwsh -ErrorAction SilentlyContinue) { pwsh -File $tempFile } else { powershell -File $tempFile }; Remove-Item $tempFile
+> ```
+
 This express installation will automatically:
 - Download the latest signing tool
 - Prompt to remove any existing LocalSign certificates

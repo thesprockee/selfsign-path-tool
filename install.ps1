@@ -80,7 +80,7 @@ function Install-LocalSign {
     if (-not (Test-Administrator)) {
         Write-Error "This script must be run as Administrator to install certificates and sign system files."
         Write-Host "Please restart PowerShell as Administrator and run the command again." -ForegroundColor Red
-        exit 1
+        throw "Administrator privileges required"
     }
 
     # Step 1: Download selfsign-path.ps1
@@ -92,7 +92,7 @@ function Install-LocalSign {
     }
     catch {
         Write-Error "Failed to download selfsign-path.ps1: $($_.Exception.Message)"
-        exit 1
+        throw "Failed to download required selfsign-path.ps1 script"
     }
 
     # Step 2: Handle existing certificates
@@ -170,7 +170,7 @@ function Install-LocalSign {
     }
     catch {
         Write-Error "Failed to create certificate: $($_.Exception.Message)"
-        exit 1
+        throw "Failed to create signing certificate"
     }
 
     # Step 4: Sign EVR directories
