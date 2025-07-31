@@ -26,10 +26,6 @@
     Additional directories to scan and sign. These will be processed along with
     the default Oculus VR directories.
 
-.PARAMETER Directories
-    Additional directories to scan and sign. These will be processed along with
-    the default Oculus VR directories.
-
 .EXAMPLE
     Install via one-liner (recommended):
     $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
