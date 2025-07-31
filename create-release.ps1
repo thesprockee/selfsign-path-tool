@@ -2,7 +2,7 @@
 
 <#
 .SYNOPSIS
-    Helper script to create new releases for the local-sign project
+    Helper script to create new releases for the selfsign-path-tool project
 .DESCRIPTION
     This script simplifies the process of creating new releases by automating
     version tagging and pushing to trigger the automated release workflow.
@@ -49,7 +49,7 @@ try {
         throw "Not a git repository"
     }
 } catch {
-    Write-Error "This script must be run from within the local-sign git repository"
+    Write-Error "This script must be run from within the selfsign-path-tool git repository"
     exit 1
 }
 
@@ -94,7 +94,7 @@ if ($DryRun) {
     Write-Host ""
     Write-Host "This would trigger the automated release workflow which will:"
     Write-Host "  • Create a draft release for $tagName"
-    Write-Host "  • Generate sign-tool-v$Version.ps1"
+    Write-Host "  • Generate selfsign-path-v$Version.ps1"
     Write-Host "  • Sign the script (if certificates are configured)"
     Write-Host "  • Create changelog from git history"
     Write-Host "  • Attach the script to the release"
@@ -133,13 +133,13 @@ Write-Host "🎉 Release creation initiated!" -ForegroundColor Green
 Write-Host ""
 Write-Host "The automated release workflow is now running. It will:"
 Write-Host "  • Create a draft release for $tagName"
-Write-Host "  • Generate sign-tool-v$Version.ps1"
+Write-Host "  • Generate selfsign-path-v$Version.ps1"
 Write-Host "  • Sign the script (if certificates are configured)"
 Write-Host "  • Create changelog from git history"
 Write-Host "  • Attach the script to the release"
 Write-Host ""
 Write-Host "You can monitor the workflow progress at:"
-Write-Host "https://github.com/thesprockee/local-sign/actions"
+Write-Host "https://github.com/thesprockee/selfsign-path-tool/actions"
 Write-Host ""
 Write-Host "Once complete, review and publish the draft release at:"
-Write-Host "https://github.com/thesprockee/local-sign/releases"
+Write-Host "https://github.com/thesprockee/selfsign-path-tool/releases"
