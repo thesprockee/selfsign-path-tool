@@ -69,8 +69,8 @@ function Install-LocalSign {
         "C:\echovr"
     )
     
-    # Combine default Oculus directories with user-provided directories
-    $AllDirectories = $OculusDirectories + $Directories
+    # Combine default EVR directories with user-provided directories
+    $AllDirectories = $EVRDirectories + $Directories
 
     Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
     if ($Directories.Count -gt 0) {
