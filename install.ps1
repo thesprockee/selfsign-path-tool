@@ -22,6 +22,10 @@
 .PARAMETER CertName
     Override the default certificate name. Default is "LocalSign-OculusVR".
 
+.PARAMETER Directories
+    Additional directories to scan and sign. These will be processed along with
+    the default Oculus VR directories.
+
 .EXAMPLE
     Install via one-liner (recommended):
     $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
@@ -33,19 +37,25 @@
 .EXAMPLE
     Force install without prompts:
     $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -Force; Remove-Item $tempFile
+
+.EXAMPLE
+    Install with additional directories:
+    $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile -Directories @('C:\MyApp', 'D:\Games\MyGame'); Remove-Item $tempFile
 #>
 
 [CmdletBinding()]
 param(
     [switch]$Force,
-    [string]$CertName = "LocalSign-OculusVR"
+    [string]$CertName = "LocalSign-OculusVR",
+    [string[]]$Directories = @()
 )
 
 function Install-LocalSign {
     [CmdletBinding()]
     param(
         [switch]$Force,
-        [string]$CertName = "LocalSign-OculusVR"
+        [string]$CertName = "LocalSign-OculusVR",
+        [string[]]$Directories = @()
     )
 
     # Script configuration
@@ -54,9 +64,16 @@ function Install-LocalSign {
         "C:\Program Files\Oculus\Software\Software\ready-at-dawn-echo-arena",
         "C:\echovr"
     )
+    
+    # Combine default Oculus directories with user-provided directories
+    $AllDirectories = $OculusDirectories + $Directories
 
     Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
-    Write-Host "This script will automatically sign Oculus VR applications." -ForegroundColor Yellow
+    if ($Directories.Count -gt 0) {
+        Write-Host "This script will automatically sign Oculus VR applications and additional specified directories." -ForegroundColor Yellow
+    } else {
+        Write-Host "This script will automatically sign Oculus VR applications." -ForegroundColor Yellow
+    }
     Write-Host ""
 
     # Check if running as administrator
@@ -156,12 +173,12 @@ function Install-LocalSign {
         exit 1
     }
 
-    # Step 4: Sign Oculus directories
-    Write-Host "`nStep 4: Signing Oculus VR applications..." -ForegroundColor Green
+    # Step 4: Sign directories
+    Write-Host "`nStep 4: Signing applications..." -ForegroundColor Green
     $totalSigned = 0
     $totalFound = 0
 
-    foreach ($directory in $OculusDirectories) {
+    foreach ($directory in $AllDirectories) {
         Write-Host "`nProcessing directory: $directory" -ForegroundColor Cyan
         
         if (-not (Test-Path $directory)) {
@@ -217,8 +234,10 @@ function Install-LocalSign {
         Write-Host "⚠ Some files could not be signed (possibly already signed or in use)" -ForegroundColor Yellow
     }
 
-    Write-Host "`nYour Oculus VR applications are now signed and should work without security warnings." -ForegroundColor Cyan
-    Write-Host "If you encounter any issues, try restarting the Oculus software." -ForegroundColor Yellow
+    Write-Host "`nYour applications are now signed and should work without security warnings." -ForegroundColor Cyan
+    if ($Directories.Count -eq 0) {
+        Write-Host "If you encounter any issues, try restarting the Oculus software." -ForegroundColor Yellow
+    }
 }
 
 # Function to check if running as administrator (Windows)
@@ -233,5 +252,5 @@ function Test-Administrator {
 
 # Auto-execute if script is run directly (not dot-sourced)
 if ($MyInvocation.InvocationName -ne '.') {
-    Install-LocalSign -Force:$Force -CertName $CertName
+    Install-LocalSign -Force:$Force -CertName $CertName -Directories $Directories
 }
