@@ -242,7 +242,7 @@ function Install-LocalSign {
 
 # Function to check if running as administrator (Windows)
 function Test-Administrator {
-    if (($PSVersionTable.PSVersion.Major -ge 6 -and $IsWindows) -or ($PSVersionTable.PSVersion.Major -lt 6) -or ($env:OS -eq "Windows_NT")) {
+    if (($PSVersionTable.PSVersion.Major -ge 6 -and $IsWindows) -or ($PSVersionTable.PSVersion.Major -lt 6)) {
         $currentUser = [Security.Principal.WindowsIdentity]::GetCurrent()
         $principal = New-Object Security.Principal.WindowsPrincipal($currentUser)
         return $principal.IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -253,4 +253,4 @@ function Test-Administrator {
 # Auto-execute if script is run directly (not dot-sourced)
 if ($MyInvocation.InvocationName -ne '.') {
     Install-LocalSign -Force:$Force -CertName $CertName -Directories $Directories
-}
+}
