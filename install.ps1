@@ -22,6 +22,14 @@
 .PARAMETER CertName
     Override the default certificate name. Default is "LocalSign-EVR".
 
+.PARAMETER Directories
+    Additional directories to scan and sign. These will be processed along with
+    the default Oculus VR directories.
+
+.PARAMETER Directories
+    Additional directories to scan and sign. These will be processed along with
+    the default Oculus VR directories.
+
 .EXAMPLE
     Install via one-liner (recommended):
     $tempFile = New-TemporaryFile; iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/install.ps1 -OutFile $tempFile; pwsh -File $tempFile; Remove-Item $tempFile
@@ -50,7 +58,8 @@ function Install-LocalSign {
     [CmdletBinding()]
     param(
         [switch]$Force,
-        [string]$CertName = "LocalSign-EVR"
+        [string]$CertName = "LocalSign-EVR",
+        [string[]]$Directories = @()
     )
 
     # Script configuration
@@ -64,7 +73,11 @@ function Install-LocalSign {
     $AllDirectories = $OculusDirectories + $Directories
 
     Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
-    Write-Host "This script will automatically sign EVR applications." -ForegroundColor Yellow
+    if ($Directories.Count -gt 0) {
+        Write-Host "This script will automatically sign Oculus VR applications and additional specified directories." -ForegroundColor Yellow
+    } else {
+        Write-Host "This script will automatically sign EVR applications." -ForegroundColor Yellow
+    }
     Write-Host ""
 
     # Check if running as administrator
@@ -164,8 +177,8 @@ function Install-LocalSign {
         exit 1
     }
 
-    # Step 4: Sign EVR directories
-    Write-Host "`nStep 4: Signing EVR applications..." -ForegroundColor Green
+    # Step 4: Sign directories
+    Write-Host "`nStep 4: Signing applications..." -ForegroundColor Green
     $totalSigned = 0
     $totalFound = 0
 
@@ -225,8 +238,10 @@ function Install-LocalSign {
         Write-Host "⚠ Some files could not be signed (possibly already signed or in use)" -ForegroundColor Yellow
     }
 
-    Write-Host "`nYour EVR applications are now signed and should work without security warnings." -ForegroundColor Cyan
-    Write-Host "If you encounter any issues, try restarting the EVR software." -ForegroundColor Yellow
+    Write-Host "`nYour applications are now signed and should work without security warnings." -ForegroundColor Cyan
+    if ($Directories.Count -eq 0) {
+        Write-Host "If you encounter any issues, try restarting the software." -ForegroundColor Yellow
+    }
 }
 
 # Function to check if running as administrator (Windows)
