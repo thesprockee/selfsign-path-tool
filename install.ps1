@@ -178,7 +178,7 @@ function Install-LocalSign {
     $totalSigned = 0
     $totalFound = 0
 
-    foreach ($directory in $EVRDirectories) {
+    foreach ($directory in $AllDirectories) {
         Write-Host "`nProcessing directory: $directory" -ForegroundColor Cyan
         
         if (-not (Test-Path $directory)) {
@@ -253,4 +253,4 @@ function Test-Administrator {
 # Auto-execute if script is run directly (not dot-sourced)
 if ($MyInvocation.InvocationName -ne '.') {
     Install-LocalSign -Force:$Force -CertName $CertName -Directories $Directories
-}
+}
