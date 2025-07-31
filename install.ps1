@@ -74,7 +74,7 @@ function Install-LocalSign {
 
     Write-Host "=== SelfSign-Path-Tool Express Installation ===" -ForegroundColor Cyan
     if ($Directories.Count -gt 0) {
-        Write-Host "This script will automatically sign Oculus VR applications and additional specified directories." -ForegroundColor Yellow
+        Write-Host "This script will automatically sign EVR applications and additional specified directories." -ForegroundColor Yellow
     } else {
         Write-Host "This script will automatically sign EVR applications." -ForegroundColor Yellow
     }
