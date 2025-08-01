@@ -204,7 +204,9 @@ jobs:
           Write-Host "Executing GitHub CLI with arguments: $ghArgs"
           Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
           
-          if ($LASTEXITCODE -eq 0) {
+          $proc = Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+          
+          if ($proc.ExitCode -eq 0) {
             Write-Host "Script uploaded to release successfully!" -ForegroundColor Green
             
             # Also update the release notes if we have them
