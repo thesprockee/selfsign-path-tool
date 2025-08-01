@@ -214,7 +214,7 @@ jobs:
             $ghArgs = @(
               "release", "edit", $env:TAG_NAME, "--notes-file", "RELEASE_NOTES.md"
             )
-            Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+            $proc = Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
           } else {
             Write-Error "Failed to upload script to release"
             exit 1
