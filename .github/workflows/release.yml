@@ -4,10 +4,13 @@ on:
   push:
     tags:
       - 'v*.*.*'  # Triggers on semantic version tags like v1.0.0, v2.1.3, etc.
+  release:
+    types: [created]
 
 jobs:
   create-release:
     runs-on: windows-latest
+    if: github.event_name == 'push' || (github.event_name == 'release' && github.event.release.draft == true)
     
     steps:
     - name: Checkout code
@@ -18,10 +21,24 @@ jobs:
     - name: Extract version from tag
       shell: pwsh
       run: |
-        $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+        if ($env:GITHUB_EVENT_NAME -eq "push") {
+          # Tag push event - extract from GITHUB_REF
+          $version = $env:GITHUB_REF -replace 'refs/tags/v', ''
+          $tagName = $env:GITHUB_REF -replace 'refs/tags/', ''
+        } elseif ($env:GITHUB_EVENT_NAME -eq "release") {
+          # Release event - extract from event data
+          $tagName = '${{ github.event.release.tag_name }}'
+          $version = $tagName -replace '^v', ''
+        } else {
+          Write-Error "Unexpected event type: $env:GITHUB_EVENT_NAME"
+          exit 1
+        }
+        
+        Write-Host "Event type: $env:GITHUB_EVENT_NAME"
+        Write-Host "Tag name: $tagName"
         Write-Host "Version: $version"
         echo "VERSION=$version" >> $env:GITHUB_ENV
-        echo "TAG_NAME=${env:GITHUB_REF##*/}" >> $env:GITHUB_ENV
+        echo "TAG_NAME=$tagName" >> $env:GITHUB_ENV
     
     - name: Create versioned script
       shell: pwsh
@@ -158,22 +175,48 @@ jobs:
     - name: Create draft release and upload script
       shell: pwsh
       run: |
-        Write-Host "Creating draft release with GitHub CLI..."
-        
-        # Create the draft release with the versioned script attached
-        $ghArgs = @(
-          "release", "create", $env:TAG_NAME, $env:VERSIONED_SCRIPT,
-          "--draft", "--title", "Release $env:TAG_NAME", "--notes-file", "RELEASE_NOTES.md"
-        )
-        
-        Write-Host "Executing GitHub CLI with arguments: $ghArgs"
-        Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
-        
-        if ($LASTEXITCODE -eq 0) {
-          Write-Host "Draft release created successfully!" -ForegroundColor Green
-        } else {
-          Write-Error "Failed to create draft release"
-          exit 1
+        if ($env:GITHUB_EVENT_NAME -eq "push") {
+          Write-Host "Creating draft release for tag push..."
+          
+          # Create the draft release with the versioned script attached
+          $ghArgs = @(
+            "release", "create", $env:TAG_NAME, $env:VERSIONED_SCRIPT,
+            "--draft", "--title", "Release $env:TAG_NAME", "--notes-file", "RELEASE_NOTES.md"
+          )
+          
+          Write-Host "Executing GitHub CLI with arguments: $ghArgs"
+          Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+          
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Draft release created successfully!" -ForegroundColor Green
+          } else {
+            Write-Error "Failed to create draft release"
+            exit 1
+          }
+        } elseif ($env:GITHUB_EVENT_NAME -eq "release") {
+          Write-Host "Uploading script to existing release..."
+          
+          # Upload the versioned script to the existing release
+          $ghArgs = @(
+            "release", "upload", $env:TAG_NAME, $env:VERSIONED_SCRIPT
+          )
+          
+          Write-Host "Executing GitHub CLI with arguments: $ghArgs"
+          Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+          
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Script uploaded to release successfully!" -ForegroundColor Green
+            
+            # Also update the release notes if we have them
+            Write-Host "Updating release notes..."
+            $ghArgs = @(
+              "release", "edit", $env:TAG_NAME, "--notes-file", "RELEASE_NOTES.md"
+            )
+            Start-Process -FilePath "gh" -ArgumentList $ghArgs -NoNewWindow -Wait -PassThru
+          } else {
+            Write-Error "Failed to upload script to release"
+            exit 1
+          }
         }
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -182,11 +225,22 @@ jobs:
       shell: pwsh
       run: |
         Write-Host "🎉 Release automation completed!" -ForegroundColor Green
-        Write-Host "📦 Draft release created: $env:TAG_NAME"
-        Write-Host "📝 Script attached: $env:VERSIONED_SCRIPT"
+        Write-Host "📝 Event type: $env:GITHUB_EVENT_NAME"
+        Write-Host "📦 Release: $env:TAG_NAME"
+        Write-Host "📄 Script: $env:VERSIONED_SCRIPT"
         Write-Host "🔐 Script signed: $env:SCRIPT_SIGNED"
         Write-Host ""
-        Write-Host "The draft release is now available at:"
+        
+        if ($env:GITHUB_EVENT_NAME -eq "push") {
+          Write-Host "✅ Draft release created for tag push"
+        } elseif ($env:GITHUB_EVENT_NAME -eq "release") {
+          Write-Host "✅ Script uploaded to existing draft release"
+        }
+        
+        Write-Host ""
+        Write-Host "The release is available at:"
         Write-Host "https://github.com/$env:GITHUB_REPOSITORY/releases"
         Write-Host ""
-        Write-Host "Review the release and publish when ready!"
+        if ($env:GITHUB_EVENT_NAME -eq "push") {
+          Write-Host "Review the draft release and publish when ready!"
+        }
