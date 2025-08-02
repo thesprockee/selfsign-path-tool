@@ -74,7 +74,12 @@ function Invoke-Clean {
     )
     
     foreach ($pattern in $filesToRemove) {
-        $files = Get-ChildItem -Path $pattern -ErrorAction SilentlyContinue
+        try {
+            $files = Get-ChildItem -Path $pattern
+        } catch {
+            Write-Host "  Warning: Could not enumerate files for pattern '$pattern': $($_.Exception.Message)" -ForegroundColor DarkYellow
+            $files = @()
+        }
         foreach ($file in $files) {
             Remove-Item $file.FullName -Force
             Write-Host "  Removed: $($file.Name)" -ForegroundColor Gray
