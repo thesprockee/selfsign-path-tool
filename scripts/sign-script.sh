@@ -27,7 +27,19 @@ if [ -n "$SIGNING_CERT" ] && [ -n "$SIGNING_CERT_PASSWORD" ]; then
         
         try {
             # Load certificate
-            \$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(\$certPath, \$env:SIGNING_CERT_PASSWORD)
+    # Create a secure temporary file for the certificate
+    CERT_TEMP_FILE=$(mktemp)
+    chmod 600 "$CERT_TEMP_FILE"
+    echo "$SIGNING_CERT" | base64 -d > "$CERT_TEMP_FILE"
+    
+    # Use PowerShell to handle the signing since it requires Windows-specific APIs
+    powershell.exe -Command "
+        \$versionedScript = '$VERSIONED_SCRIPT'
+        \$certPath = '$CERT_TEMP_FILE'
+        \$certPassword = '$SIGNING_CERT_PASSWORD'
+        try {
+            # Load certificate
+            \$cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2(\$certPath, \$certPassword)
             
             # Sign the script
             \$result = Set-AuthenticodeSignature -FilePath \$versionedScript -Certificate \$cert -TimestampServer 'https://timestamp.digicert.com'
