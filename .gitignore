@@ -45,3 +45,6 @@ Thumbs.db
 # Windows artifacts
 $RECYCLE.BIN/
 Desktop.ini
+
+build/
+dist/
