@@ -18,7 +18,7 @@ fi
 echo "Generating changelog for version $VERSION (tag: $TAG_NAME)..."
 
 # Get the previous tag
-PREVIOUS_TAG=$(git tag --sort=-version:refname | head -1)
+PREVIOUS_TAG=$(git tag --sort=-version:refname | sed -n '2p')
 if [ -z "$PREVIOUS_TAG" ]; then
     # If no previous tag, use first commit
     PREVIOUS_TAG=$(git rev-list --max-parents=0 HEAD)
