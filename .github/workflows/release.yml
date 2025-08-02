@@ -41,10 +41,35 @@ jobs:
         echo "TAG_NAME=$tagName" >> $env:GITHUB_ENV
     
     - name: Create release artifacts
-      shell: bash
+      shell: pwsh
       run: |
-        echo "🔧 Creating release artifacts using Makefile..."
-        make dist
+        Write-Host "🔧 Creating release artifacts using CMake..."
+        
+        # Create build directory and configure
+        New-Item -ItemType Directory -Force -Path "build"
+        Set-Location "build"
+        
+        # Configure CMake with version information
+        cmake .. -DVERSION=$env:VERSION -DTAG_NAME=$env:TAG_NAME
+        
+        # Build the distribution target
+        cmake --build . --target dist
+        
+        # Move generated files to root for upload
+        Set-Location ..
+        if (Test-Path "selfsign-path-v$env:VERSION.ps1") {
+          Write-Host "✅ Generated versioned script: selfsign-path-v$env:VERSION.ps1"
+        } else {
+          Write-Error "❌ Failed to generate versioned script"
+          exit 1
+        }
+        
+        if (Test-Path "RELEASE_NOTES.md") {
+          Write-Host "✅ Generated release notes: RELEASE_NOTES.md"
+        } else {
+          Write-Error "❌ Failed to generate release notes"
+          exit 1
+        }
       env:
         SIGNING_CERT: ${{ secrets.SIGNING_CERT }}
         SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}

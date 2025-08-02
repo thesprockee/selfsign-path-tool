@@ -1,47 +1,56 @@
 # Release Workflow Documentation
 
-This document describes the Makefile-based release workflow for the selfsign-path-tool project.
+This document describes the CMake-based release workflow for the selfsign-path-tool project.
 
 ## Overview
 
-The release workflow has been refactored to use a Makefile that orchestrates the creation of release artifacts. This provides better maintainability and allows for easier local testing of the release process.
+The release workflow uses a CMake build system that orchestrates the creation of release artifacts using PowerShell scripts. This provides Windows compatibility while maintaining cross-platform support and allows for easier local testing of the release process.
 
 ## Structure
 
-### Makefile
-- **Location**: `./Makefile`
-- **Main Target**: `make dist` - Creates all release artifacts
-- **Dependencies**: Requires `bash` and standard Unix tools (available on GitHub Actions Windows runners)
+### CMake Build System
+- **Location**: `./CMakeLists.txt`
+- **Main Target**: `cmake --build . --target dist` - Creates all release artifacts
+- **Requirements**: CMake 3.15+ and PowerShell (pwsh or powershell)
 
-### Shell Scripts
+### PowerShell Scripts
 All scripts are located in the `scripts/` directory:
 
-- `create-versioned-script.sh` - Creates the versioned PowerShell script
-- `sign-script.sh` - Signs the script if certificates are available
-- `generate-changelog.sh` - Generates changelog and release notes
+- `create-versioned-script.ps1` - Creates the versioned PowerShell script
+- `sign-script.ps1` - Signs the script if certificates are available
+- `generate-changelog.ps1` - Generates changelog and release notes
 
 ### GitHub Actions Workflow
 - **Location**: `.github/workflows/release.yml`
 - **Trigger**: Git tags matching `v*.*.*` pattern
 - **Runner**: `windows-latest`
-- **Key Change**: Now uses `make dist` instead of inline PowerShell commands
+- **Key Change**: Now uses CMake with PowerShell instead of make with bash scripts
 
 ## Usage
 
 ### Local Testing
-```bash
-# Set required environment variables
+```powershell
+# Set required environment variables (Windows)
+$env:VERSION = "1.0.0"
+$env:TAG_NAME = "v1.0.0"
+
+# Or on Unix-like systems
 export VERSION=1.0.0
 export TAG_NAME=v1.0.0
 
+# Create build directory and configure
+mkdir build
+cd build
+cmake .. -DVERSION=$env:VERSION
+
 # Create all release artifacts
-make dist
+cmake --build . --target dist
 
 # Clean up generated files
-make clean
+cmake --build . --target clean-dist
 
 # Show help
-make help
+cmake --build . --target help-dist
 ```
 
 ### Environment Variables
@@ -54,6 +63,14 @@ make help
 - `selfsign-path-v${VERSION}.ps1` - Versioned PowerShell script
 - `RELEASE_NOTES.md` - Changelog and installation instructions
 
+## Available CMake Targets
+- `dist` - Create all release artifacts (main target)
+- `create-versioned-script` - Create versioned PowerShell script
+- `generate-changelog` - Generate changelog and release notes
+- `sign-script` - Sign the script (if certificates available)
+- `clean-dist` - Clean generated distribution files
+- `help-dist` - Show help information
+
 ## Preserved Features
 All existing functionality has been preserved:
 - Version/tag extraction from GitHub events
@@ -63,8 +80,9 @@ All existing functionality has been preserved:
 - Error handling and logging
 
 ## Benefits
+- **Windows Compatible**: Uses CMake and PowerShell instead of make and bash
+- **Cross-Platform**: Works on Windows, Linux, and macOS
 - **Modularity**: Individual tasks are now in separate, testable scripts
 - **Maintainability**: Easier to modify and debug individual components
 - **Local Testing**: Full release process can be tested locally
-- **Platform Agnostic**: Makefile works on both Unix-like systems and Windows
-- **Reduced Duplication**: Common patterns extracted into reusable scripts
+- **IDE Support**: CMake provides better IDE integration than Makefiles
