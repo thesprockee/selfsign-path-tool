@@ -40,137 +40,14 @@ jobs:
         echo "VERSION=$version" >> $env:GITHUB_ENV
         echo "TAG_NAME=$tagName" >> $env:GITHUB_ENV
     
-    - name: Create versioned script
-      shell: pwsh
+    - name: Create release artifacts
+      shell: bash
       run: |
-        $versionedScript = "selfsign-path-v$env:VERSION.ps1"
-        Copy-Item "selfsign-path.ps1" $versionedScript
-        Write-Host "Created versioned script: $versionedScript"
-        echo "VERSIONED_SCRIPT=$versionedScript" >> $env:GITHUB_ENV
-    
-    - name: Sign script (if certificate available)
-      shell: pwsh
-      run: |
-        $versionedScript = $env:VERSIONED_SCRIPT
-        
-        # Check if signing certificate secrets are available
-        if ($env:SIGNING_CERT -and $env:SIGNING_CERT_PASSWORD) {
-          Write-Host "Signing certificate found, proceeding with script signing..."
-          
-          # Decode base64 certificate
-          $certBytes = [System.Convert]::FromBase64String($env:SIGNING_CERT)
-          $certPath = "signing-cert.pfx"
-          [System.IO.File]::WriteAllBytes($certPath, $certBytes)
-          
-          try {
-            # Load certificate
-            $cert = New-Object System.Security.Cryptography.X509Certificates.X509Certificate2($certPath, $env:SIGNING_CERT_PASSWORD)
-            
-            # Sign the script
-            $result = Set-AuthenticodeSignature -FilePath $versionedScript -Certificate $cert -TimestampServer "https://timestamp.digicert.com"
-            
-            if ($result.Status -eq "Valid") {
-              Write-Host "Successfully signed $versionedScript" -ForegroundColor Green
-              echo "SCRIPT_SIGNED=true" >> $env:GITHUB_ENV
-            } else {
-              Write-Warning "Signing failed: $($result.StatusMessage)"
-              echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
-            }
-          }
-          catch {
-            Write-Error "Error during signing: $($_.Exception.Message)"
-            echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
-          }
-          finally {
-            # Clean up certificate file
-            if (Test-Path $certPath) {
-              Remove-Item $certPath -Force
-            }
-          }
-        } else {
-          Write-Host "No signing certificate configured. Skipping script signing." -ForegroundColor Yellow
-          Write-Host "To enable script signing, add SIGNING_CERT (base64 encoded .pfx) and SIGNING_CERT_PASSWORD secrets to your repository."
-          echo "SCRIPT_SIGNED=false" >> $env:GITHUB_ENV
-        }
+        echo "🔧 Creating release artifacts using Makefile..."
+        make dist
       env:
         SIGNING_CERT: ${{ secrets.SIGNING_CERT }}
         SIGNING_CERT_PASSWORD: ${{ secrets.SIGNING_CERT_PASSWORD }}
-    
-    - name: Generate changelog
-      shell: pwsh
-      run: |
-        Write-Host "Generating changelog..."
-        
-        # Get the previous tag
-        $previousTag = git tag --sort=-version:refname | Select-Object -First 1
-        if (-not $previousTag) {
-          # If no previous tag, use first commit
-          $previousTag = git rev-list --max-parents=0 HEAD
-        }
-        
-        Write-Host "Previous tag/commit: $previousTag"
-        Write-Host "Current tag: $env:TAG_NAME"
-        
-        # Generate changelog from git log
-        $gitLog = git log --pretty=format:"- %s (%h)" "${previousTag}..HEAD"
-        
-        if ($gitLog) {
-          $changelog = @"
-        ## Changes in $env:TAG_NAME
-        
-        $gitLog
-        
-        ## Installation
-        
-        Download the attached ``selfsign-path-v$env:VERSION.ps1`` script and run it with PowerShell.
-        
-        ``````powershell
-        # Make the script executable and run it
-        .\selfsign-path-v$env:VERSION.ps1 --help
-        ``````
-        
-        ## Script Verification
-        "@
-          
-          if ($env:SCRIPT_SIGNED -eq "true") {
-            $changelog += @"
-        
-        
-        ✅ **This script has been digitally signed** for security and authenticity.
-        
-        You can verify the signature using:
-        ``````powershell
-        Get-AuthenticodeSignature .\selfsign-path-v$env:VERSION.ps1
-        ``````
-        "@
-          } else {
-            $changelog += @"
-        
-        
-        ⚠️ **This script is not digitally signed.** Please verify the source and integrity before use.
-        "@
-          }
-        } else {
-          $changelog = @"
-        ## Changes in $env:TAG_NAME
-        
-        Initial release of the selfsign-path-tool utility.
-        
-        ## Installation
-        
-        Download the attached ``selfsign-path-v$env:VERSION.ps1`` script and run it with PowerShell.
-        
-        ``````powershell
-        # Make the script executable and run it
-        .\selfsign-path-v$env:VERSION.ps1 --help
-        ``````
-        "@
-        }
-        
-        # Save changelog to file
-        $changelog | Out-File -FilePath "RELEASE_NOTES.md" -Encoding utf8
-        Write-Host "Changelog generated:"
-        Get-Content "RELEASE_NOTES.md"
     
     - name: Create draft release and upload script
       shell: pwsh
@@ -180,7 +57,7 @@ jobs:
           
           # Create the draft release with the versioned script attached
           $ghArgs = @(
-            "release", "create", $env:TAG_NAME, $env:VERSIONED_SCRIPT,
+            "release", "create", $env:TAG_NAME, "selfsign-path-v$env:VERSION.ps1",
             "--draft", "--title", "Release $env:TAG_NAME", "--notes-file", "RELEASE_NOTES.md"
           )
           
@@ -198,7 +75,7 @@ jobs:
           
           # Upload the versioned script to the existing release
           $ghArgs = @(
-            "release", "upload", $env:TAG_NAME, $env:VERSIONED_SCRIPT
+            "release", "upload", $env:TAG_NAME, "selfsign-path-v$env:VERSION.ps1"
           )
           
           Write-Host "Executing GitHub CLI with arguments: $ghArgs"
@@ -229,7 +106,7 @@ jobs:
         Write-Host "🎉 Release automation completed!" -ForegroundColor Green
         Write-Host "📝 Event type: $env:GITHUB_EVENT_NAME"
         Write-Host "📦 Release: $env:TAG_NAME"
-        Write-Host "📄 Script: $env:VERSIONED_SCRIPT"
+        Write-Host "📄 Script: selfsign-path-v$env:VERSION.ps1"
         Write-Host "🔐 Script signed: $env:SCRIPT_SIGNED"
         Write-Host ""
         
