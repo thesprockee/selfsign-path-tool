@@ -49,7 +49,7 @@ Write-Host "Current tag: $TagName"
 # Generate changelog from git log.
 # Use try-catch to handle errors if the commit range is empty.
 try {
-    $GitLog = git log --pretty=format:"- %s (%h)" "${PreviousTag}..HEAD" 2>$null
+    $GitLog = git log --pretty=format:"- %s (%h)" "${PreviousTag}..HEAD" 2> $null
     if ($LASTEXITCODE -ne 0) {
         $GitLog = @()
     }
