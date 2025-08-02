@@ -47,8 +47,15 @@ Write-Host "Previous tag/commit: $PreviousTag"
 Write-Host "Current tag: $TagName"
 
 # Generate changelog from git log.
-# `-ErrorAction SilentlyContinue` mimics bash's `2>/dev/null || true` to prevent errors if the commit range is empty.
-$GitLog = git log --pretty=format:"- %s (%h)" "${PreviousTag}..HEAD" -ErrorAction SilentlyContinue
+# Use try-catch to handle errors if the commit range is empty.
+try {
+    $GitLog = git log --pretty=format:"- %s (%h)" "${PreviousTag}..HEAD" 2>$null
+    if ($LASTEXITCODE -ne 0) {
+        $GitLog = @()
+    }
+} catch {
+    $GitLog = @()
+}
 
 # Join the array of lines from git log into a single multi-line string.
 $GitLogContent = $GitLog -join [System.Environment]::NewLine

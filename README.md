@@ -85,6 +85,50 @@ iwr -useb https://raw.githubusercontent.com/thesprockee/selfsign-path-tool/main/
 - **Signature Removal**: Remove self-signed signatures while preserving other signatures
 - **Cross-platform**: Works on Windows, Linux, and macOS with PowerShell Core 
 - **Automated Releases**: Automatic creation of signed releases when semantic version tags are pushed
+- **Windows-Compatible Build System**: Uses CMake and PowerShell for cross-platform compatibility
+
+## Build System
+
+This project uses a Windows-compatible build system based on CMake and PowerShell scripts. You can build releases locally for testing.
+
+### Prerequisites
+- CMake 3.15 or later
+- PowerShell (pwsh or powershell)
+- Git
+
+### Building Releases
+
+**Option 1: Using PowerShell build script (recommended)**
+```powershell
+# Show available targets
+.\build.ps1 -Target help
+
+# Create release artifacts
+.\build.ps1 -Target dist -Version "1.0.0"
+
+# Clean generated files
+.\build.ps1 -Target clean
+```
+
+**Option 2: Using CMake directly**
+```powershell
+# Configure and build
+mkdir build
+cd build
+cmake .. -DVERSION=1.0.0
+cmake --build . --target dist
+
+# Show available targets
+cmake --build . --target help-dist
+```
+
+### Build Targets
+- `dist` - Create all release artifacts (versioned script + changelog)
+- `create-versioned-script` - Create versioned PowerShell script only
+- `generate-changelog` - Generate changelog and release notes only  
+- `sign-script` - Sign the script (if certificates available)
+- `clean` / `clean-dist` - Clean generated files
+- `help` / `help-dist` - Show help information
 
 ## Automated Release Process
 
