@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -20,6 +21,7 @@ var (
 	flagStatus   = flag.Bool("status", false, "Print the signing status of the specified files instead of signing them")
 	flagHelp     = flag.Bool("h", false, "Display help documentation and exit")
 	flagVersion  = flag.Bool("version", false, "Display version information and exit")
+	flagGUI      = flag.Bool("gui", false, "Launch the graphical user interface (Windows only)")
 )
 
 func init() {
@@ -33,6 +35,21 @@ func main() {
 	if *flagVersion {
 		fmt.Printf("selfsign-path-tool version %s\n", version)
 		fmt.Printf("Cross-platform code signing utility\n")
+		os.Exit(0)
+	}
+
+	// Check for GUI mode (Windows only)
+	if *flagGUI {
+		if runtime.GOOS != "windows" {
+			fmt.Fprintf(os.Stderr, "Error: GUI mode is only supported on Windows.\n")
+			os.Exit(1)
+		}
+		
+		fmt.Printf("Starting GUI mode...\n")
+		if err := runGUI(); err != nil {
+			fmt.Fprintf(os.Stderr, "GUI Error: %v\n", err)
+			os.Exit(1)
+		}
 		os.Exit(0)
 	}
 
@@ -292,6 +309,9 @@ OPTIONS
     --version
         Display version information and exit.
 
+    --gui
+        Launch the graphical user interface (Windows only).
+
 EXAMPLES
     Sign a single executable:
         selfsign-path myapp.exe
@@ -310,6 +330,9 @@ EXAMPLES
 
     Remove self-signatures from all files in a release folder:
         selfsign-path --clear -r release/
+
+    Launch the graphical user interface (Windows only):
+        selfsign-path --gui
 
 `)
 }

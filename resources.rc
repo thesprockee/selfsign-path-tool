@@ -1,0 +1,4 @@
+// Traditional Windows resource file for icon embedding
+// This is used for alternative compilation methods with resource compilers
+// The current implementation uses Go's embed feature instead (see icon_windows.go)
+IDI_MAIN_ICON ICON "signing_tool.ico"
