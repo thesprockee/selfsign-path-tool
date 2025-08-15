@@ -169,5 +169,4 @@ func installCertificateWithPowerShell(cert *x509.Certificate) error {
 func isRunningAsAdmin() bool {
 	cmd := exec.Command("net", "session")
 	err := cmd.Run()
-	return err == nil
 }
