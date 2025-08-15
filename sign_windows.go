@@ -40,7 +40,7 @@ func signFilePlatform(filename string, cert *Certificate) error {
 	// Create a simple signature file indicating the file is signed
 	sigContent := fmt.Sprintf("SIGNED_BY=%s\nTIMESTAMP=%s\nCERT_SUBJECT=%s\n", 
 		cert.Subject, 
-		"2024-01-01T00:00:00Z",  // Simplified timestamp
+		time.Now().Format(time.RFC3339),  // Use current timestamp
 		cert.Cert.Subject.String())
 	
 	if err := os.WriteFile(signatureFile, []byte(sigContent), 0644); err != nil {
