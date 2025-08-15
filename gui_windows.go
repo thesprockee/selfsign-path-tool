@@ -109,6 +109,7 @@ var (
 	user32   = syscall.NewLazyDLL("user32.dll")
 	kernel32 = syscall.NewLazyDLL("kernel32.dll")
 	comdlg32 = syscall.NewLazyDLL("comdlg32.dll")
+	shell32  = syscall.NewLazyDLL("shell32.dll")
 	
 	procDefWindowProc     = user32.NewProc("DefWindowProcW")
 	procRegisterClass     = user32.NewProc("RegisterClassW")
@@ -119,6 +120,7 @@ var (
 	procTranslateMessage  = user32.NewProc("TranslateMessage")
 	procDispatchMessage   = user32.NewProc("DispatchMessageW")
 	procPostQuitMessage   = user32.NewProc("PostQuitMessage")
+	procPostMessage       = user32.NewProc("PostMessageW")
 	procLoadCursor        = user32.NewProc("LoadCursorW")
 	procSetWindowText     = user32.NewProc("SetWindowTextW")
 	procGetWindowText     = user32.NewProc("GetWindowTextW")
@@ -126,6 +128,8 @@ var (
 	procMessageBox        = user32.NewProc("MessageBoxW")
 	procGetOpenFileName   = comdlg32.NewProc("GetOpenFileNameW")
 	procGetModuleHandle   = kernel32.NewProc("GetModuleHandleW")
+	procIsUserAnAdmin     = shell32.NewProc("IsUserAnAdmin")
+	procCreateIconFromResource = user32.NewProc("CreateIconFromResource")
 )
 
 // GUI state
@@ -187,6 +191,7 @@ func (app *GuiApp) registerWindowClass() error {
 		HInstance:     syscall.Handle(hInstance),
 		LpszClassName: className,
 		HCursor:       loadCursor(0, 32512), // IDC_ARROW
+		HIcon:         loadIconFromMemory(), // Use embedded icon
 	}
 	
 	ret, _, _ := procRegisterClass.Call(uintptr(unsafe.Pointer(&wc)))
@@ -274,6 +279,27 @@ func updateWindow(hwnd syscall.Handle) {
 
 func loadCursor(hInstance syscall.Handle, lpCursorName uintptr) syscall.Handle {
 	ret, _, _ := procLoadCursor.Call(uintptr(hInstance), lpCursorName)
+	return syscall.Handle(ret)
+}
+
+// loadIconFromMemory creates an icon from embedded data
+func loadIconFromMemory() syscall.Handle {
+	iconData := GetIconData()
+	if len(iconData) == 0 {
+		return 0
+	}
+	
+	// CreateIconFromResource expects the icon data to be in the correct format
+	// For ICO files, we need to skip the ICO header and use the actual icon data
+	// ICO header is 6 bytes + 16 bytes per icon entry
+	// For simplicity, we'll try to use the data as-is first
+	ret, _, _ := procCreateIconFromResource.Call(
+		uintptr(unsafe.Pointer(&iconData[0])),
+		uintptr(len(iconData)),
+		1, // fIcon (TRUE for icon, FALSE for cursor)
+		0x00030000, // dwVersion (standard version)
+	)
+	
 	return syscall.Handle(ret)
 }
 

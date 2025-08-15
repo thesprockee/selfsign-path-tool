@@ -168,8 +168,6 @@ func installCertificateWithPowerShell(cert *x509.Certificate) error {
 
 // isRunningAsAdmin checks if the current process is running as administrator
 func isRunningAsAdmin() bool {
-	cmd := exec.Command("net", "session")
-	err := cmd.Run()
 	// Use Windows API IsUserAnAdmin from shell32.dll
 	ret, _, _ := procIsUserAnAdmin.Call()
 	return ret != 0

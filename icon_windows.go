@@ -2,23 +2,26 @@
 
 package main
 
-// Windows icon resource data (embedded)
-// This would normally be a compiled resource file (.ico)
-// For demonstration, we're just specifying the icon ID
+import (
+	_ "embed"
+)
 
+// Embed the icon file data directly into the binary
+//go:embed signing_tool.ico
+var iconData []byte
+
+// Windows icon resource data (embedded)
 const (
 	// Icon resource ID
 	IDI_MAIN_ICON = 101
 )
 
-// Icon embedding would be done through resource compilation
-// For a full implementation, you would:
-// 1. Create an .ico file
-// 2. Create a .rc resource file
-// 3. Compile with resource compiler (rc.exe)
-// 4. Link with Go using -ldflags="-H windowsgui -extldflags=-static"
-//
-// Example .rc file content:
-// IDI_MAIN_ICON ICON "signing_tool.ico"
-//
-// For now, we'll use the default application icon
+// GetIconData returns the embedded icon data
+func GetIconData() []byte {
+	return iconData
+}
+
+// GetIconSize returns the size of the embedded icon data
+func GetIconSize() int {
+	return len(iconData)
+}

@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
 
 // performSigning executes the signing process in a separate goroutine
@@ -232,10 +233,6 @@ func generateRandomString(length int) string {
 	return string(b)
 }
 
-// Helper function to safely access UI controls from goroutines
-func (app *GuiApp) safeAppendOutput(text string) {
-	// In a real implementation, you'd want to marshal this to the main UI thread
-	// For now, we'll call directly but in production you'd use PostMessage or similar
 // Windows custom message for appending output
 const WM_APP_APPEND_OUTPUT = 0x8001
 
@@ -254,19 +251,7 @@ func (app *GuiApp) safeAppendOutput(text string) {
 	outputTextMap[id] = text
 	outputTextMapMutex.Unlock()
 
-	// Assume app has a field hwnd of type syscall.Handle or uintptr for the main window handle
-	// You may need to adjust this depending on your actual GuiApp definition
-	var hwnd syscall.Handle
-	if h, ok := app.hwnd.(syscall.Handle); ok {
-		hwnd = h
-	} else if h, ok := app.hwnd.(uintptr); ok {
-		hwnd = syscall.Handle(h)
-	} else {
-		// Fallback: cannot get window handle, do nothing
-		return
-	}
-
 	// Send the message to the main thread
 	// wParam: id of the text, lParam: 0
-	syscall.PostMessage(hwnd, WM_APP_APPEND_OUTPUT, uintptr(id), 0)
+	procPostMessage.Call(uintptr(app.hwnd), WM_APP_APPEND_OUTPUT, uintptr(id), 0)
 }
