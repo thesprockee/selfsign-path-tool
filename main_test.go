@@ -4,7 +4,10 @@ import (
 "testing"
 "os"
 "os/exec"
-"strings"
+	"os"
+	"os/exec"
+	"strings"
+	"testing"
 )
 
 func TestCLIHelp(t *testing.T) {
