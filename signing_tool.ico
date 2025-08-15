@@ -6,4 +6,4 @@
 # Reserved: 2 bytes (0x0000)
 # Type: 2 bytes (0x0001 for ICO)
 # Count: 2 bytes (0x0001 for 1 image)
-PLACEHOLDER_ICO_DATA="placeholder - would contain actual icon binary data"
+# This file is a placeholder and must be replaced with a valid .ico file before building.
