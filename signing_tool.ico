@@ -1,0 +1,9 @@
+# This is a placeholder for the actual icon file
+# In a real implementation, this would be a proper .ico file
+# For now, we'll use a minimal 16x16 ICO format placeholder
+
+# ICO Header (6 bytes)
+# Reserved: 2 bytes (0x0000)
+# Type: 2 bytes (0x0001 for ICO)
+# Count: 2 bytes (0x0001 for 1 image)
+PLACEHOLDER_ICO_DATA="placeholder - would contain actual icon binary data"

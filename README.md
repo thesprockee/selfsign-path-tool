@@ -10,6 +10,7 @@ A cross-platform code signing utility written in Go that manages and applies sel
 - **Pattern matching**: Supports glob patterns and recursive directory processing
 - **Signature management**: Sign, verify, and remove signatures
 - **Certificate store integration**: Installs certificates to system trust stores
+- **Windows GUI**: Installer-style graphical interface for easy file signing (Windows only)
 
 ## Quick Installation
 
@@ -66,9 +67,33 @@ OPTIONS:
     -k, --key-file <FILE>       Use specific private key file (.key)
     --clear                     Remove self-signed signatures
     --status                    Check signature status
+    --gui                       Launch graphical user interface (Windows only)
     -h, --help                  Show help
     --version                   Show version
 ```
+
+### Graphical User Interface (Windows Only)
+
+For Windows users, the tool provides an installer-style GUI for easy file signing:
+
+```bash
+# Launch the GUI
+./selfsign-path-tool --gui
+```
+
+The GUI provides a step-by-step wizard that:
+
+1. **Welcome Screen**: Explains the signing process and benefits
+2. **File Selection**: Browse and select executable files to sign
+3. **Confirmation**: Review selected files and signing options
+4. **Processing**: Automatically creates certificates, signs files, and installs to Windows certificate store
+5. **Completion**: Shows results and cleanup status
+
+**Security Features**:
+- Creates one-time-use certificates with unique names
+- Securely deletes private keys after signing (3-pass overwrite)
+- Automatically installs certificates to Windows certificate store
+- Helps reduce Windows Defender false positives
 
 ### Examples
 
@@ -90,6 +115,9 @@ OPTIONS:
 
 # Remove signatures from release builds
 ./selfsign-path-tool --clear -r release/
+
+# Launch GUI for interactive signing (Windows only)
+./selfsign-path-tool --gui
 ```
 
 ## How It Works

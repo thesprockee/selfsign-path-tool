@@ -39,6 +39,12 @@ build-linux:
 build-windows:
 	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_WINDOWS)
 
+# Build for Windows with GUI support (includes icon)
+.PHONY: build-windows-gui
+build-windows-gui:
+	@echo "Building Windows GUI version with icon support..."
+	CGO_ENABLED=0 GOOS=windows GOARCH=amd64 $(GOBUILD) $(LDFLAGS) -o $(BINARY_WINDOWS)
+
 # Test
 .PHONY: test
 test:
@@ -72,6 +78,7 @@ help:
 	@echo "  build-all    - Build for all platforms (Linux, Windows)"
 	@echo "  build-linux  - Build for Linux x86_64"
 	@echo "  build-windows- Build for Windows x86_64"
+	@echo "  build-windows-gui - Build for Windows x86_64 with GUI and icon support"
 	@echo "  test         - Run tests"
 	@echo "  clean        - Clean build artifacts"
 	@echo "  deps         - Download and tidy dependencies"

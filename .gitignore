@@ -5,6 +5,10 @@ selfsign-path-tool-*
 *.exe
 *.bin
 
+# Test binaries
+test-binary
+test-binary.exe
+
 # Temporary files
 *.tmp
 *.temp
