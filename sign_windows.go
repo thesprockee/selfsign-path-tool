@@ -170,5 +170,7 @@ func installCertificateWithPowerShell(cert *x509.Certificate) error {
 func isRunningAsAdmin() bool {
 	cmd := exec.Command("net", "session")
 	err := cmd.Run()
-	return err == nil
+	// Use Windows API IsUserAnAdmin from shell32.dll
+	ret, _, _ := procIsUserAnAdmin.Call()
+	return ret != 0
 }
