@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strings"
 	"syscall"
+	"time"
 )
 
 // Windows API constants
@@ -169,4 +170,5 @@ func installCertificateWithPowerShell(cert *x509.Certificate) error {
 func isRunningAsAdmin() bool {
 	cmd := exec.Command("net", "session")
 	err := cmd.Run()
+	return err == nil
 }
